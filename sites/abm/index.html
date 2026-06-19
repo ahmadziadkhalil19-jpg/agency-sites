@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABM — The Art of Perfect Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0A0A1A',
+                        gold: '#C9A84C',
+                        cream: '#F5F0E8',
+                        'dark-surface': 'rgba(16, 16, 35, 0.7)',
+                        'dark-border': 'rgba(201, 168, 76, 0.08)',
+                        'gold-muted': 'rgba(201, 168, 76, 0.15)',
+                    },
+                    fontFamily: {
+                        'display': ['Cormorant Garamond', 'serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --dark: #0A0A1A;
+            --cream: #F5F0E8;
+            --gold-muted: rgba(201, 168, 76, 0.15);
+        }
+        
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        html { 
+            scroll-behavior: smooth; 
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0A0A1A;
+            color: #F5F0E8;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        
+        ::selection {
+            background: rgba(201, 168, 76, 0.25);
+            color: #F5F0E8;
+        }
+        
+        /* ===== Scroll Progress ===== */
+        #scroll-progress {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            height: 1.5px;
+            background: linear-gradient(90deg, var(--gold), #E8D5A3, var(--gold));
+            z-index: 9999;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 12px rgba(201, 168, 76, 0.4);
+        }
+        
+        /* ===== Hero Canvas ===== */
+        #hero-canvas {
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* ===== Navigation ===== */
+        .nav-glass {
+            background: rgba(10, 10, 26, 0.55);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; 
+            left: 50%;
+            width: 0; 
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.3s ease, left 0.3s ease;
+        }
+        
+        .nav-link:hover { 
+            color: var(--gold); 
+        }
+        
+        .nav-link:hover::after { 
+            width: 100%; 
+            left: 0; 
+        }
+        
+        /* ===== Gold Button ===== */
+        .btn-gold {
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        .btn-gold::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gold);
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: -1;
+        }
+        
+        .btn-gold:hover::before { 
+            transform: translateY(0); 
+        }
+        
+        .btn-gold:hover { 
+            color: var(--dark); 
+        }
+        
+        .btn-gold-filled {
+            position: relative;
+            overflow: hidden;
+            background: var(--gold);
+            color: var(--dark);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            border: 1px solid var(--gold);
+        }
+        
+        .btn-gold-filled::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--dark);
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 0;
+        }
+        
+        .btn-gold-filled:hover::before { 
+            transform: translateY(0); 
+        }
+        
+        .btn-gold-filled:hover { 
+            color: var(--gold); 
+        }
+        
+        /* ===== Glass Cards ===== */
+        .glass-card {
+            background: rgba(16, 16, 35, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(201, 168, 76, 0.06);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(201, 168, 76, 0.2);
+            transform: translateY(-6px);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(201, 168, 76, 0.04);
+        }
+        
+        /* ===== Reveal Animation ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .reveal-delay-1 { 
+            transition-delay: 0.12s; 
+        }
+        
+        .reveal-delay-2 { 
+            transition-delay: 0.24s; 
+        }
+        
+        .reveal-delay-3 { 
+            transition-delay: 0.36s; 
+        }
+        
+        .reveal-delay-4 { 
+            transition-delay: 0.48s; 
+        }
+        
+        /* ===== Stagger Animation ===== */
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .stagger-1 { 
+            animation: fadeInUp 1s ease-out 0.1s both; 
+        }
+        
+        .stagger-2 { 
+            animation: fadeInUp 1s ease-out 0.25s both; 
+        }
+        
+        .stagger-3 { 
+            animation: fadeInUp 1s ease-out 0.4s both; 
+        }
+        
+        .stagger-4 { 
+            animation: fadeInUp 1s ease-out 0.55s both; 
+        }
+        
+        .stagger-5 { 
+            animation: fadeInUp 1s ease-out 0.7s both; 
+        }
+        
+        /* ===== Decorative Line ===== */
+        .deco-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+        }
+        
+        /* ===== Image Hover ===== */
+        .img-hover-zoom {
+            overflow: hidden;
+            border-radius: inherit;
+        }
+        
+        .img-hover-zoom img {
+            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        .img-hover-zoom:hover img {
+            transform: scale(1.06);
+        }
+        
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { 
+            width: 5px; 
+        }
+        
+        ::-webkit-scrollbar-track { 
+            background: var(--dark); 
+        }
+        
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(201, 168, 76, 0.3); 
+            border-radius: 4px; 
+        }
+        
+        ::-webkit-scrollbar-thumb:hover { 
+            background: rgba(201, 168, 76, 0.5); 
+        }
+        
+        /* ===== Custom cursor area ===== */
+        #hero-section { 
+            cursor: none; 
+        }
+        
+        /* ===== Mobile nav ===== */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        /* ===== Product 3D Tilt ===== */
+        .tilt-card {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .tilt-inner {
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transform-style: preserve-3d;
+        }
+        
+        /* ===== Glow Text ===== */
+        .glow-gold {
+            text-shadow: 0 0 40px rgba(201, 168, 76, 0.15);
+        }
+        
+        /* ===== Section Label ===== */
+        .section-label {
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 400;
+            color: var(--gold);
+        }
+        
+        /* ===== Parallax layers ===== */
+        .parallax-slow { 
+            will-change: transform; 
+        }
+        
+        /* ===== Noise overlay ===== */
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 200px;
+        }
+        
+        /* ===== Testimonial stars ===== */
+        .star-gold { 
+            color: var(--gold); 
+        }
+        
+        /* ===== Quote mark ===== */
+        .quote-mark {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 120px;
+            line-height: 0.7;
+            color: rgba(201, 168, 76, 0.08);
+        }
+        
+        /* ===== Smooth image load ===== */
+        img {
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+        
+        img[loading] { 
+            opacity: 0; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress -->
+    <div id="scroll-progress"></div>
+    
+    <!-- Film Grain -->
+    <div class="noise-overlay"></div>
+
+    <!-- Custom Cursor (desktop only) -->
+    <div id="custom-cursor" class="fixed pointer-events-none z-[9999] hidden md:block" style="width: 20px; height: 20px; border: 1px solid rgba(201,168,76,0.6); border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, border-color 0.3s; mix-blend-mode: difference;">
+        <div id="cursor-dot" style="position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; transform: translate(-50%, -50%); transition: transform 0.15s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-700" style="padding: 28px 0;">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <a href="#hero" class="flex items-center gap-3 group">
+                <svg class="w-9 h-9 transition-transform duration-500 group-hover:rotate-[360deg]" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="38" height="38" rx="8" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+                    <rect x="8" y="12" width="24" height="2" rx="1" fill="#C9A84C" opacity="0.7"/>
+                    <rect x="12" y="19" width="16" height="2" rx="1" fill="#C9A84C" opacity="0.5"/>
+                    <rect x="14" y="26" width="12" height="2" rx="1" fill="#C9A84C" opacity="0.3"/>
+                    <circle cx="34" cy="6" r="2" fill="#C9A84C" opacity="0.6"/>
+                </svg>
+                <span class="font-display text-2xl font-light tracking-wider text-cream">ABM</span>
+            </a>
+            
+            <div class="hidden md:flex items-center gap-10">
+                <a href="#products" class="nav-link text-[13px] tracking-[0.2em] uppercase font-light text-cream/60 hover:text-gold transition-all">Collection</a>
+                <a href="#story" class="nav-link text-[13px] tracking-[0.2em] uppercase font-light text-cream/60 hover:text-gold transition-all">Story</a>
+                <a href="#social-proof" class="nav-link text-[13px] tracking-[0.2em] uppercase font-light text-cream/60 hover:text-gold transition-all">Voices</a>
+                <a href="#cta" class="btn-gold px-7 py-2.5 text-[11px] tracking-[0.2em] uppercase font-medium rounded-sm">Discover</a>
+            </div>
+            
+            <button id="mobile-toggle" class="md:hidden relative w-8 h-6 flex flex-col justify-between items-end" aria-label="Toggle menu">
+                <span class="block w-full h-px bg-cream/70 transition-all duration-300 origin-right"></span>
+                <span class="block w-3/4 h-px bg-cream/50 transition-all duration-300"></span>
+                <span class="block w-5/6 h-px bg-cream/70 transition-all duration-300 origin-right"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-0 z-40 bg-dark/98 backdrop-blur-2xl flex flex-col justify-center items-center gap-8 md:hidden">
+        <a href="#products" class="mobile-link text-2xl font-display italic text-cream/80 hover:text-gold transition-all">Collection</a>
+        <a href="#story" class="mobile-link text-2xl font-display italic text-cream/80 hover:text-gold transition-all">Story</a>
+        <a href="#social-proof" class="mobile-link text-2xl font-display italic text-cream/80 hover:text-gold transition-all">Voices</a>
+        <a href="#cta" class="mobile-link mt-6 btn-gold px-10 py-3 text-sm tracking-[0.2em] uppercase rounded-sm">Discover</a>
+    </div>
+
+    <!-- HERO -->
+    <section id="hero" class="relative w-full min-h-[100dvh] flex items-center justify-center overflow-hidden">
+        <canvas id="hero-canvas"></canvas>
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+            <div class="stagger-1 mb-8 flex justify-center">
+                <div class="flex items-center gap-4">
+                    <span class="h-px w-10 bg-gold/30"></span>
+                    <span class="section-label">Since 2019</span>
+                    <span class="h-px w-10 bg-gold/30"></span>
+                </div>
+            </div>
+            <h1 class="stagger-2 font-display text-6xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-light leading-[0.92] tracking-tight text-cream glow-gold mb-8">
+                <span class="italic text-gold">Folding</span> is<br>
+                an art form
+            </h1>
+            <p class="stagger-3 font-body text-base sm:text-lg md:text-xl font-light text-cream/45 max-w-lg mx-auto leading-relaxed tracking-wide mb-12">
+                Where precision engineering meets the timeless elegance of perfectly folded garments
+            </p>
+            <div class="stagger-4 flex flex-col sm:flex-row gap-5 justify-center items-center">
+                <a href="#products" class="btn-gold-filled px-10 py-4 text-[11px] tracking-[0.25em] uppercase font-semibold rounded-sm">
+                    Explore Collection
+                </a>
+                <a href="#story" class="group flex items-center gap-3 text-cream/40 hover:text-gold transition-all duration-300 text-[11px] tracking-[0.2em] uppercase">
+                    <span>Our Philosophy</span>
+                    <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"/></svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Decorative bottom gradient -->
+        <div class="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-dark to-transparent z-10 pointer-events-none"></div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3 stagger-5">
+            <span class="text-[10px] tracking-[0.4em] uppercase text-cream/20">Scroll</span>
+            <div class="w-px h-8 bg-gradient-to-b from-gold/30 to-transparent"></div>
+        </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="products" class="relative w-full py-32 md:py-44 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24 reveal">
+                <span class="section-label mb-5 block reveal">The Collection</span>
+                <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-light leading-[1.1] tracking-tight text-cream">
+                    Engineered for<br>
+                    <span class="italic text-gold">perfect symmetry</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+                <!-- Product 1 -->
+                <div class="glass-card rounded-lg p-1 reveal reveal-delay-1 tilt-card group">
+                    <div class="tilt-inner">
+                        <div class="relative overflow-hidden rounded-md mb-7 img-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80" alt="ABM Signature Fold System" class="w-full h-72 sm:h-80 object-cover">
+                            <div class="absolute top-4 left-4 bg-dark/70 backdrop-blur-md px-3 py-1.5 rounded-sm">
+                                <span class="text-[10px] tracking-[0.2em] uppercase text-gold font-medium">Best Seller</span>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                        <div class="px-5 pb-7">
+                            <p class="text-[10px] tracking-[0.3em] uppercase text-gold/60 mb-2">Precision Engineered</p>
+                            <h3 class="font-display text-2xl sm:text-3xl font-light text-cream mb-3 tracking-wide">Signature Fold</h3>
+                            <p class="text-cream/35 text-sm leading-relaxed mb-6 font-light">A premium aluminum folding board with precision laser-etched guides for consistently flawless results, every single time.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="font-display text-2xl font-light text-gold">$189</span>
+                                <button class="btn-gold px-6 py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium rounded-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="glass-card rounded-lg p-1 reveal reveal-delay-2 tilt-card group">
+                    <div class="tilt-inner">
+                        <div class="relative overflow-hidden rounded-md mb-7 img-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=750&fit=crop&q=80" alt="ABM Travel Companion" class="w-full h-72 sm:h-80 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                        <div class="px-5 pb-7">
+                            <p class="text-[10px] tracking-[0.3em] uppercase text-gold/60 mb-2">Portable Design</p>
+                            <h3 class="font-display text-2xl sm:text-3xl font-light text-cream mb-3 tracking-wide">Travel Companion</h3>
+                            <p class="text-cream/35 text-sm leading-relaxed mb-6 font-light">Ultra-light carbon fiber folding frame. TSA-friendly dimensions that slip into any carry-on with zero compromise.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="font-display text-2xl font-light text-gold">$129</span>
+                                <button class="btn-gold px-6 py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium rounded-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="glass-card rounded-lg p-1 reveal reveal-delay-3 tilt-card group">
+                    <div class="tilt-inner">
+                        <div class="relative overflow-hidden rounded-md mb-7 img-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=750&fit=crop&q=80" alt="ABM Master Kit" class="w-full h-72 sm:h-80 object-cover">
+                            <div class="absolute top-4 left-4 bg-gold/20 backdrop-blur-md px-3 py-1.5 rounded-sm">
+                                <span class="text-[10px] tracking-[0.2em] uppercase text-gold font-medium">Complete Set</span>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                        <div class="px-5 pb-7">
+                            <p class="text-[10px] tracking-[0.3em] uppercase text-gold/60 mb-2">Complete System</p>
+                            <h3 class="font-display text-2xl sm:text-3xl font-light text-cream mb-3 tracking-wide">Master Kit</h3>
+                            <p class="text-cream/35 text-sm leading-relaxed mb-6 font-light">The definitive folding system with smart organization inserts. Everything the connoisseur needs in one elegant case.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="font-display text-2xl font-light text-gold">$349</span>
+                                <button class="btn-gold px-6 py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium rounded-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BRAND STORY -->
+    <section id="story" class="relative w-full py-32 md:py-44 overflow-hidden">
+        <!-- Background decorative elements -->
+        <div class="absolute top-20 right-0 w-[500px] h-[500px] rounded-full opacity-[0.03]" style="background: radial-gradient(circle, var(--gold) 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-[0.02]" style="background: radial-gradient(circle, var(--gold) 0%, transparent 70%);"></div>
+        
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                <!-- Image -->
+                <div class="relative reveal">
+                    <div class="relative rounded-lg overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=900&fit=crop&q=80" alt="ABM Craftsmanship" class="w-full h-[500px] md:h-[620px] object-cover" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark/40 via-transparent to-transparent"></div>
+                    </div>
+                    <!-- Floating card -->
+                    <div class="absolute -bottom-8 -right-4 md:-right-8 glass-card rounded-lg p-6 max-w-[240px]">
+                        <p class="font-display text-4xl font-light text-gold mb-1">12+</p>
+                        <p class="text-cream/40 text-xs tracking-wider uppercase">Patents Filed</p>
+                    </div>
+                </div>
+
+                <!-- Text -->
+                <div class="reveal reveal-delay-2">
+                    <span class="section-label mb-6 block">Our Philosophy</span>
+                    <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-light leading-[1.05] tracking-tight text-cream mb-10">
+                        Born from a belief in<br>
+                        <span class="italic text-gold">intentional living</span>
+                    </h2>
+                    
+                    <div class="space-y-6 mb-12">
+                        <p class="text-cream/45 font-light leading-[1.85] text-[15px]">
+                            In 2019, our founder stood before an overflowing dresser and realized something profound: the chaos of unfolded clothes was a mirror for the chaos of modern life. ABM was born from a simple, radical idea — that the act of folding, done with intention, could transform not just your wardrobe, but your state of mind.
+                        </p>
+                        <p class="text-cream/45 font-light leading-[1.85] text-[15px]">
+                            Every ABM product is the result of obsessive research and a refusal to compromise. We source aerospace-grade materials, engineer to sub-millimeter tolerances, and obsess over the sensory experience of the fold — the snap, the alignment, the quiet satisfaction of order restored.
+                        </p>
+                    </div>
+
+                    <!-- Values -->
+                    <div class="grid grid-cols-2 gap-x-10 gap-y-8">
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-10 h-10 rounded-full border border-gold/15 flex items-center justify-center flex-shrink-0 group-hover:border-gold/40 transition-colors">
+                                <svg class="w-4 h-4 text-gold/50" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-display text-xl text-cream mb-1">Obsessive Precision</p>
+                                <p class="text-cream/30 text-sm font-light leading-relaxed">Engineered to sub-millimeter tolerances</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-10 h-10 rounded-full border border-gold/15 flex items-center justify-center flex-shrink-0 group-hover:border-gold/40 transition-colors">
+                                <svg class="w-4 h-4 text-gold/50" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-display text-xl text-cream mb-1">Aerospace Materials</p>
+                                <p class="text-cream/30 text-sm font-light leading-relaxed">Carbon fiber and premium alloys</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-10 h-10 rounded-full border border-gold/15 flex items-center justify-center flex-shrink-0 group-hover:border-gold/40 transition-colors">
+                                <svg class="w-4 h-4 text-gold/50" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-display text-xl text-cream mb-1">Lifetime Warranty</p>
+                                <p class="text-cream/30 text-sm font-light leading-relaxed">Built to last generations</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-10 h-10 rounded-full border border-gold/15 flex items-center justify-center flex-shrink-0 group-hover:border-gold/40 transition-colors">
+                                <svg class="w-4 h-4 text-gold/50" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-display text-xl text-cream mb-1">Mindful Design</p>
+                                <p class="text-cream/30 text-sm font-light leading-relaxed">Every detail has purpose</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOCIAL PROOF -->
+    <section id="social-proof" class="relative w-full py-32 md:py-44 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24 reveal">
+                <span class="section-label mb-5 block">Voices</span>
+                <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-light leading-[1.1] tracking-tight text-cream">
+                    Loved by those who<br>
+                    <span class="italic text-gold">appreciate craft</span>
+                </h2>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24 reveal">
+                <div class="text-center py-8 border border-gold/8 rounded-lg glass-card">
+                    <p class="font-display text-4xl md:text-5xl font-light text-gold mb-2">50K+</p>
+                    <p class="text-cream/35 text-xs tracking-[0.2em] uppercase font-light">Happy Owners</p>
+                </div>
+                <div class="text-center py-8 border border-gold/8 rounded-lg glass-card">
+                    <p class="font-display text-4xl md:text-5xl font-light text-gold mb-2">4.9</p>
+                    <p class="text-cream/35 text-xs tracking-[0.2em] uppercase font-light">Average Rating</p>
+                </div>
+                <div class="text-center py-8 border border-gold/8 rounded-lg glass-card">
+                    <p class="font-display text-4xl md:text-5xl font-light text-gold mb-2">30+</p>
+                    <p class="text-cream/35 text-xs tracking-[0.2em] uppercase font-light">Countries</p>
+                </div>
+                <div class="text-center py-8 border border-gold/8 rounded-lg glass-card">
+                    <p class="font-display text-4xl md:text-5xl font-light text-gold mb-2">12</p>
+                    <p class="text-cream/35 text-xs tracking-[0.2em] uppercase font-light">Design Awards</p>
+                </div>
+            </div>
+
+            <!-- Testimonials -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                <div class="glass-card rounded-lg p-8 lg:p-10 reveal reveal-delay-1 relative group">
+                    <div class="quote-mark absolute top-4 right-6">"</div>
+                    <div class="flex gap-1 mb-6">
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-cream/55 font-light leading-[1.85] text-[15px] mb-8 italic">
+                        "I never knew folding could be this satisfying. The precision guides are genius — my closet has never looked this organized. It feels like a small luxury every morning."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80" alt="Sarah Mitchell" class="w-11 h-11 rounded-full object-cover border border-gold/20">
+                        <div>
+                            <p class="text-cream font-display text-base">Sarah Mitchell</p>
+                            <p class="text-cream/30 text-xs tracking-wide">Interior Designer, NYC</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-lg p-8 lg:p-10 reveal reveal-delay-2 relative group">
+                    <div class="quote-mark absolute top-4 right-6">"</div>
+                    <div class="flex gap-1 mb-6">
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-cream/55 font-light leading-[1.85] text-[15px] mb-8 italic">
+                        "The Travel Companion went with me to Tokyo and back. My suits arrived pristine. The carbon fiber build is impossibly light yet incredibly sturdy. Worth every cent."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80" alt="James Chen" class="w-11 h-11 rounded-full object-cover border border-gold/20">
+                        <div>
+                            <p class="text-cream font-display text-base">James Chen</p>
+                            <p class="text-cream/30 text-xs tracking-wide">Tech Executive, SF</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-lg p-8 lg:p-10 reveal reveal-delay-3 relative group">
+                    <div class="quote-mark absolute top-4 right-6">"</div>
+                    <div class="flex gap-1 mb-6">
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4 star-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-cream/55 font-light leading-[1.85] text-[15px] mb-8 italic">
+                        "As someone who lives out of a suitcase, ABM has been a revelation. My hotel room stays organized, and the quality of the materials speaks for itself. Five stars."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&q=80" alt="Elena Rodriguez" class="w-11 h-11 rounded-full object-cover border border-gold/20">
+                        <div>
+                            <p class="text-cream font-display text-base">Elena Rodriguez</p>
+                            <p class="text-cream/30 text-xs tracking-wide">Fashion Photographer, Paris</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="cta" class="relative w-full py-32 md:py-44 overflow-hidden">
+        <!-- Background image with overlay -->
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1600&h=900&fit=crop&q=80" alt="Background" class="w-full h-full object-cover opacity-[0.07]" loading="lazy">
+            <div class="absolute inset-0 bg-gradient-to-b from-dark via-dark/90 to-dark"></div>
+        </div>
+        
+        <div class="relative z-10 max-w-3xl mx-auto px-6 text-center reveal">
+            <span class="section-label mb-6 block">Begin Your Journey</span>
+            <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-light leading-[1.05] tracking-tight text-cream mb-8">
+                Ready to transform<br>
+                your <span class="italic text-gold">daily ritual?</span>
+            </h2>
+            <p class="text-cream/40 font-light leading-[1.85] text-base md:text-lg max-w-lg mx-auto mb-14">
+                Join thousands who have elevated the simple act of folding into a meditative practice of precision and care.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-5 justify-center items-center mb-16">
+                <a href="#" class="btn-gold-filled px-12 py-4 text-[11px] tracking-[0.25em] uppercase font-semibold rounded-sm inline-block">
+                    Shop Now
+                </a>
+                <a href="#" class="group flex items-center gap-3 text-cream/40 hover:text-gold transition-all duration-300 text-[11px] tracking-[0.2em] uppercase">
+                    <span>Watch The Film</span>
+                    <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+                </a>
+            </div>
+            
+            <!-- Newsletter -->
+            <div class="max-w-md mx-auto">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="h-px flex-1 bg-gradient-to-r from-transparent to-gold/20"></span>
+                    <span class="text-[10px] tracking-[0.3em] uppercase text-cream/25">Stay Informed</span>
+                    <span class="h-px flex-1 bg-gradient-to-l from-transparent to-gold/20"></span>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="email" placeholder="Your email address" class="flex-1 bg-dark-surface/60 border border-gold/10 rounded-sm px-5 py-3.5 text-sm text-cream placeholder-cream/20 focus:outline-none focus:border-gold/30 transition-colors font-light tracking-wide">
+                    <button class="btn-gold px-8 py-3.5 text-[10px] tracking-[0.2em] uppercase font-medium rounded-sm whitespace-nowrap">
+                        Subscribe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="relative w-full border-t border-gold/[0.06] py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-3 mb-5">
+                        <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="1" width="38" height="38" rx="8" stroke="#C9A84C" stroke-width="0.8" opacity="0.3"/>
+                            <rect x="8" y="12" width="24" height="2" rx="1" fill="#C9A84C" opacity="0.5"/>
+                            <rect x="12" y="19" width="16" height="2" rx="1" fill="#C9A84C" opacity="0.35"/>
+                            <rect x="14" y="26" width="12" height="2" rx="1" fill="#C9A84C" opacity="0.2"/>
+                        </svg>
+                        <span class="font-display text-xl font-light tracking-wider text-cream">ABM</span>
+                    </div>
+                    <p class="text-cream/25 text-sm font-light leading-relaxed">
+                        Precision engineered folding systems for those who demand perfection in every detail.
+                    </p>
+                </div>
+                <div>
+                    <p class="section-label mb-5">Explore</p>
+                    <ul class="space-y-3">
+                        <li><a href="#products" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Collection</a></li>
+                        <li><a href="#story" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Our Story</a></li>
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Technology</a></li>
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Journal</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="section-label mb-5">Support</p>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Contact</a></li>
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Shipping</a></li>
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Returns</a></li>
+                        <li><a href="#" class="text-cream/35 hover:text-gold transition-colors text-sm font-light">Warranty</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="section-label mb-5">Connect</p>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-10 h-10 rounded-full border border-gold/10 flex items-center justify-center hover:border-gold/30 hover:bg-gold/5 transition-all group" aria-label="Instagram">
+                            <svg class="w-4 h-4 text-cream/30 group-hover:text-gold transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gold/10 flex items-center justify-center hover:border-gold/30 hover:bg-gold/5 transition-all group" aria-label="Twitter">
+                            <svg class="w-4 h-4 text-cream/30 group-hover:text-gold transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gold/10 flex items-center justify-center hover:border-gold/30 hover:bg-gold/5 transition-all group" aria-label="Pinterest">
+                            <svg class="w-4 h-4 text-cream/30 group-hover:text-gold transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="deco-line mb-8"></div>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-cream/15 text-xs font-light tracking-wide">&copy; 2025 ABM. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-cream/15 hover:text-gold/50 transition-colors text-xs font-light">Privacy</a>
+                    <a href="#" class="text-cream/15 hover:text-gold/50 transition-colors text-xs font-light">Terms</a>
+                    <a href="#" class="text-cream/15 hover:text-gold/50 transition-colors text-xs font-light">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== HERO 3D CANVAS (Three.js) ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ===== THREE.JS HERO SCENE =====
+        (function() {
+            const canvas = document.getElementById('hero-canvas');
+            if (!canvas) return;
+            
+            const scene = new THREE.Scene();
+            // Dark background with subtle color
+            scene.background = new THREE.Color(0x0A0A1A);
+            scene.fog = new THREE.FogExp2(0x0A0A1A, 0.018);
+
+            const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 28;
+
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xc9a84c, 0.15);
+            scene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xc9a84c, 0.5);
+            dirLight.position.set(8, 12, 8);
+            scene.add(dirLight);
+
+            const pointLight1 = new THREE.PointLight(0xc9a84c, 0.4, 60);
+            pointLight1.position.set(-10, 8, 10);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xe8d5a3, 0.25, 60);
+            pointLight2.position.set(12, -6, -8);
+            scene.add(pointLight2);
+
+            const pointLight3 = new THREE.PointLight(0xc9a84c, 0.15, 50);
+            pointLight3.position.set(0, -10, 5);
+            scene.add(pointLight3);
+
+            // Group to hold all objects
+            const group = new THREE.Group();
+            scene.add(group);
+
+            // GOLDEN GEOMETRY — Elegant floating planes (folded shapes)
+            const goldMat = new THREE.MeshPhysicalMaterial({
+                color: 0xc9a84c,
+                metalness: 0.95,
+                roughness: 0.08,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.05,
+                emissive: 0xc9a84c,
+                emissiveIntensity: 0.08,
+            });
+
+            const creamMat = new THREE.MeshPhysicalMaterial({
+                color: 0xf5f0e8,
+                metalness: 0.3,
+                roughness: 0.25,
+                clearcoat: 0.8,
+                clearcoatRoughness: 0.15,
+                emissive: 0xf5f0e8,
+                emissiveIntensity: 0.03,
+            });
+
+            const darkGoldMat = new THREE.MeshPhysicalMaterial({
+                color: 0x8a7030,
+                metalness: 0.9,
+                roughness: 0.15,
+                clearcoat: 0.6,
+                emissive: 0xc9a84c,
+                emissiveIntensity: 0.04,
+            });
+
+            // Create elegant floating plane geometries (representing folded fabric)
+            const planes = [];
+            const planeConfigs = [
+                { size: [5, 5], pos: [-9, 4, -3], rot: [0.3, 0.5, 0.1], mat: goldMat },
+                { size: [4, 4], pos: [8, -3, -5], rot: [-0.2, -0.4, 0.3], mat: creamMat },
+                { size: [3.5, 3.5], pos: [0, 7, -8], rot: [0.1, 0.8, -0.2], mat: darkGoldMat },
+                { size: [6, 3], pos: [-6, -6, -2], rot: [0.5, -0.3, 0.4], mat: goldMat },
+                { size: [3, 6], pos: [10, 5, -6], rot: [-0.3, 0.6, 0.1], mat: creamMat },
+                { size: [4.5, 4.5], pos: [-3, -8, -4], rot: [0.4, 0.2, -0.3], mat: darkGoldMat },
+                { size: [2.5, 5], pos: [5, 8, -10], rot: [-0.1, -0.7, 0.2], mat: goldMat },
+                { size: [5.5, 2.5], pos: [-11, -2, -7], rot: [0.2, 0.4, 0.5], mat: creamMat },
+                { size: [3, 3], pos: [7, -8, -3], rot: [-0.4, 0.3, -0.1], mat: darkGoldMat },
+                { size: [4, 2], pos: [-8, 9, -9], rot: [0.1, -0.5, 0.3], mat: goldMat },
+            ];
+
+            planeConfigs.forEach((cfg, i) => {
+                // Use BoxGeometry with very small depth to create thin planes
+                const geo = new THREE.BoxGeometry(cfg.size[0], cfg.size[1], 0.08, 1, 1);
+                const mesh = new THREE.Mesh(geo, cfg.mat);
+                mesh.position.set(...cfg.pos);
+                mesh.rotation.set(...cfg.rot);
+                mesh.userData = { 
+                    baseY: cfg.pos[1], 
+                    speed: 0.0003 + Math.random() * 0.0005, 
+                    phase: Math.random() * Math.PI * 2,
+                    rotSpeed: 0.0001 + Math.random() * 0.0002,
+                };
+                group.add(mesh);
+                planes.push(mesh);
+            });
+
+            // PARTICLE SYSTEM — Dust motes
+            const particleCount = 120;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(particleCount * 3);
+            const pVel = [];
+
+            for (let i = 0; i < particleCount; i++) {
+                pPos[i * 3] = (Math.random() - 0.5) * 50;
+                pPos[i * 3 + 1] = (Math.random() - 0.5) * 40;
+                pPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
+                pVel.push({
+                    x: (Math.random() - 0.5) * 0.008,
+                    y: (Math.random() - 0.5) * 0.005 + 0.002,
+                    z: (Math.random() - 0.5) * 0.006,
+                });
+            }
+
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+
+            const pMat = new THREE.PointsMaterial({
+                color: 0xc9a84c,
+                size: 0.12,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending,
+            });
+
+            const particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+
+            // WIREFRAME CONNECTING LINES
+            const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a84c, transparent: true, opacity: 0.06 });
+            const lineGeo = new THREE.BufferGeometry();
+            const linePositions = new Float32Array(planeConfigs.length * 3 * 2); // Simple pairs
+            // Create a subtle constellation effect
+            for (let i = 0; i < planeConfigs.length - 1; i++) {
+                const idx = i * 6;
+                linePositions[idx] = planeConfigs[i].pos[0];
+                linePositions[idx + 1] = planeConfigs[i].pos[1];
+                linePositions[idx + 2] = planeConfigs[i].pos[2];
+                linePositions[idx + 3] = planeConfigs[(i + 1) % planeConfigs.length].pos[0];
+                linePositions[idx + 4] = planeConfigs[(i + 1) % planeConfigs.length].pos[1];
+                linePositions[idx + 5] = planeConfigs[(i + 1) % planeConfigs.length].pos[2];
+            }
+            lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+            const lines = new THREE.LineSegments(lineGeo, lineMat);
+            scene.add(lines);
+
+            // MOUSE INTERACTION
+            let mouseX = 0, mouseY = 0;
+            let targetRotX = 0, targetRotY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+            });
+
+            // Touch support
+            document.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+                    mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+                }
+            }, { passive: true });
+
+            // ANIMATION LOOP
+            let lastTime = 0;
+            const fpsInterval = 1000 / 30; // Cap at 30fps for performance
+
+            function animate(timestamp) {
+                requestAnimationFrame(animate);
+
+                const elapsed = timestamp - lastTime;
+                if (elapsed < fpsInterval) return;
+                lastTime = timestamp - (elapsed % fpsInterval);
+
+                const time = timestamp * 0.001;
+
+                // Smooth camera follow mouse
+                targetRotY = mouseX * 0.25;
+                targetRotX = mouseY * 0.15;
+                group.rotation.y += (targetRotY - group.rotation.y) * 0.03;
+                group.rotation.x += (targetRotX - group.rotation.x) * 0.03;
+
+                // Animate planes (gentle floating)
+                planes.forEach((mesh) => {
+                    mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed * 2000 + mesh.userData.phase) * 0.8;
+                    mesh.rotation.x += Math.sin(time + mesh.userData.phase) * mesh.userData.rotSpeed;
+                    mesh.rotation.y += Math.cos(time * 0.7 + mesh.userData.phase) * mesh.userData.rotSpeed;
+                });
+
+                // Animate particles
+                const positions = particles.geometry.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] += pVel[i].x;
+                    positions[i * 3 + 1] += pVel[i].y;
+                    positions[i * 3 + 2] += pVel[i].z;
+
+                    // Wrap around
+                    if (positions[i * 3 + 1] > 22) positions[i * 3 + 1] = -22;
+                    if (positions[i * 3] > 28) positions[i * 3] = -28;
+                    if (positions[i * 3] < -28) positions[i * 3] = 28;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+
+                // Slowly rotate entire scene
+                group.rotation.y += 0.0003;
+
+                renderer.render(scene, camera);
+            }
+
+            animate(0);
+
+            // RESIZE
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
+    </script>
+
+    <!-- ===== SCROLL & INTERACTION SCRIPTS ===== -->
+    <script>
+        // ===== SCROLL PROGRESS =====
+        const progressBar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            progressBar.style.width = progress + '%';
+        }, { passive: true });
+
+        // ===== NAVIGATION BACKGROUND ON SCROLL =====
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            
+            if (currentScroll > 80) {
+                navbar.classList.add('nav-glass');
+                navbar.style.padding = '14px 0';
+                navbar.style.backdropFilter = 'blur(24px) saturate(1.4)';
+            } else {
+                navbar.classList.remove('nav-glass');
+                navbar.style.padding = '28px 0';
+                navbar.style.backdropFilter = 'none';
+            }
+            
+            lastScroll = currentScroll;
+        }, { passive: true });
+
+        // ===== MOBILE MENU =====
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        let menuOpen = false;
+        
+        mobileToggle.addEventListener('click', () => {
+            menuOpen = !menuOpen;
+            mobileMenu.classList.toggle('open', menuOpen);
+            const spans = mobileToggle.querySelectorAll('span');
+            if (menuOpen) {
+                spans[0].style.transform = 'rotate(45deg) translateY(5px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translateY(-5px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+        
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                menuOpen = false;
+                mobileMenu.classList.remove('open');
+                const spans = mobileToggle.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            });
+        });
+
+        // ===== INTERSECTION OBSERVER FOR REVEAL =====
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // ===== 3D TILT ON PRODUCT CARDS =====
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            const inner = card.querySelector('.tilt-inner');
+            if (!inner) return;
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+                const dx = (x - cx) / cx;
+                const dy = (y - cy) / cy;
+                inner.style.transform = `perspective(1000px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg) translateZ(10px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                inner.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg) translateZ(0px)';
+            });
+        });
+
+        // ===== CUSTOM CURSOR =====
+        const cursor = document.getElementById('custom-cursor');
+        const cursorDot = document.getElementById('cursor-dot');
+        let cursorX = 0, cursorY = 0;
+        let currentX = 0, currentY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            cursorX = e.clientX;
+            cursorY = e.clientY;
+        });
+
+        function updateCursor() {
+            currentX += (cursorX - currentX) * 0.12;
+            currentY += (cursorY - currentY) * 0.12;
+            cursor.style.left = currentX + 'px';
+            cursor.style.top = currentY + 'px';
+            requestAnimationFrame(updateCursor);
+        }
+        
+        updateCursor();
+
+        // Cursor hover states
+        document.querySelectorAll('a, button, .tilt-card').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '48px';
+                cursor.style.height = '48px';
+                cursor.style.borderColor = 'rgba(201,168,76,0.8)';
+                cursorDot.style.transform = 'translate(-50%, -50%) scale(0)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '20px';
+                cursor.style.height = '20px';
+                cursor.style.borderColor = 'rgba(201,168,76,0.6)';
+                cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+
+        // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // ===== PARALLAX EFFECT ON SCROLL =====
+        const parallaxElements = document.querySelectorAll('.parallax-slow');
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            parallaxElements.forEach(el => {
+                const speed = 0.3;
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        }, { passive: true });
+
+        // ===== HERO TEXT PARALLAX =====
+        const heroSection = document.getElementById('hero');
+        const heroText = heroSection.querySelector('.relative.z-10');
+        
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            const heroHeight = heroSection.offsetHeight;
+            if (scrolled < heroHeight) {
+                const progress = scrolled / heroHeight;
+                heroText.style.transform = `translateY(${scrolled * 0.25}px)`;
+                heroText.style.opacity = 1 - progress * 1.2;
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
